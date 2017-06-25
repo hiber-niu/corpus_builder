@@ -1,0 +1,8 @@
+{% extends 'nre/base.html' %}
+{% load bootstrap3 %}
+{% load render_table from django_tables2 %}
+
+{% block content %}
+    {% render_table reltypes %}
+    {% bootstrap_button "添加" href="/nre/reltype/add" button_class="btn-primary" extra_classes="pull-right" %}
+{% endblock %}
