@@ -15,3 +15,9 @@ class NERRelTypeTable(tables.Table):
         model = NERRelType
         attrs = {'class': 'table table-responsive'}
         # add class="paleblue" to <table> tag
+
+
+class RecordTable(talbes.Table):
+    class Meta:
+        model = Record
+        attrs = {'class': 'table table-responsive'}

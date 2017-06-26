@@ -9,6 +9,8 @@ from django.views.generic.base import TemplateView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
+from django.core.files.storage import FileSystemStorage
+
 
 from .models import *
 from .tables import *
@@ -33,20 +35,29 @@ class HomePageView(LoginRequiredMixin, TemplateView):
 
 
 class RecordsListView(LoginRequiredMixin, TemplateView):
-    template_name = 'nre/home.html'
+    template_name = 'nre/records.html'
     context = {}
 
     def get(self, request, *args, **kwargs):
         context = {}
-        table = NERRelTypeTable(NERRelType.objects.filter().order_by('-id'))
-        table.paginate(page=request.GET.get('page', 1), per_page=20)
-        context['reltypes'] = table
-        return render(request, self.template_name, context)
+        if len(self.args) > 0 and self.args[0] != None:
+            table = RecordTable(Record.objects.filter(rel_type=self.args[0]).order_by('-id'))
+            table.paginate(page=request.GET.get('page', 1), per_page=50)
+            context['records'] = table
+            return render(request, self.template_name, context)
 
-    def get_context_data(self, **kwargs):
-        context = super(HomePageView, self).get_context_data(**kwargs)
-        messages.info(self.request, 'hello http://example.com')
-        return context
+    def post(self, request, *args, **kwargs):
+        context = {}
+        if request.POST.get("submit") and request.FILES['corpus_file']:
+            corpus_file = request.FILES['corpus_file']
+
+            filename = fs.save(corpus_file.name, corpus_file)
+            uploaded_file_url = fs.url(filename)
+            return render(request, 'core/simple_upload.html', {
+                'uploaded_file_url': uploaded_file_url
+            })
+
+        return render(request, self.template_name, context)
 
 
 class RelTypeView(LoginRequiredMixin, TemplateView):
