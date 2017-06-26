@@ -6,8 +6,16 @@
 
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    <input type="file" name="corpus_file">
-    {% bootstrap_button "上传语料文件" button_type="submit" button_class="btn-primary" extra_classes="pull-right" %}
+    {% bootstrap_form form %}
+    {% bootstrap_button "上传语料文件" button_type="submit" button_class="btn-primary" name="upload" extra_classes="pull-right" %}
+
+    <h1>&nbsp; </h1>
+    {% render_table records %}
+    {% if filename %}
+    <h3>文件上传成功：<a href="/nre/download/{{filename}}">{{ filename }}</a></h3>
+    {% endif %}
+    {% bootstrap_javascript jquery=1 %}
+    {% bootstrap_messages %}
 </form>
 
 {% endblock %}

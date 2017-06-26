@@ -10,6 +10,11 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+import mimetypes
+import os
+
+from django.utils.encoding import smart_str
 
 
 from .models import *
@@ -35,7 +40,7 @@ class HomePageView(LoginRequiredMixin, TemplateView):
 
 
 class RecordsListView(LoginRequiredMixin, TemplateView):
-    template_name = 'nre/records.html'
+    template_name = 'nre/record.html'
     context = {}
 
     def get(self, request, *args, **kwargs):
@@ -44,20 +49,33 @@ class RecordsListView(LoginRequiredMixin, TemplateView):
             table = RecordTable(Record.objects.filter(rel_type=self.args[0]).order_by('-id'))
             table.paginate(page=request.GET.get('page', 1), per_page=50)
             context['records'] = table
+            form = RecordUploadForm()
+            context['form'] = form
             return render(request, self.template_name, context)
 
     def post(self, request, *args, **kwargs):
         context = {}
-        if request.POST.get("submit") and request.FILES['corpus_file']:
-            corpus_file = request.FILES['corpus_file']
+        if 'upload' in request.POST and request.FILES['corpus_file']:
+            if len(self.args) > 0 and self.args[0] != None:
+                corpus_file = request.FILES['corpus_file']
 
-            filename = fs.save(corpus_file.name, corpus_file)
-            uploaded_file_url = fs.url(filename)
-            return render(request, 'core/simple_upload.html', {
-                'uploaded_file_url': uploaded_file_url
-            })
+                fs = FileSystemStorage()
+                filename = fs.save(corpus_file.name, corpus_file)
+                context['filename'] = filename
+                messages.success(request, '文件上传成功！')
+                messages.info(request, '正在录入文件，请稍候......')
 
-        return render(request, self.template_name, context)
+                file_path = settings.MEDIA_ROOT + '/' + file_name
+                with open(file_path, 'rb') as f:
+                    for line in f.readlines():
+                        line.split('||')
+
+
+
+
+
+
+            return render(request, self.template_name, context)
 
 
 class RelTypeView(LoginRequiredMixin, TemplateView):
@@ -122,35 +140,14 @@ class RelTypeEditView(LoginRequiredMixin, TemplateView):
 
 
 
-"""
-@login_required
-def index(request):
-    context = {}
-    params = request.GET.copy()
-    status = params.get('status', None)
-    _obj_list = NERRelType.objects.filter().order_by('-id')
-
-    paginator = Paginator(_obj_list, 50)  # Show 20 contacts per page
-
-    page = request.GET.get('page')
-    try:
-        _objs = paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        _objs = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range (e.g. 9999), deliver last page of results.
-        _objs = paginator.page(paginator.num_pages)
-
-    context.update({
-        "active_nav": "wechats",
-        "wechats": _objs,
-        "params": params,
-        "downloader": r.llen(CRAWLER_CONFIG['downloader']) or 0,
-        "antispider": r.get(CRAWLER_CONFIG['antispider']) or 0,
-        "proxy_status": _proxy_status
-
-    })
-
-    return render_to_response('nre/index.html', RequestContext(request, context))
-"""
+def download_file(request, file_name):
+    file_path = settings.MEDIA_ROOT + '/' + file_name
+    # file_wrapper = FileWrapper(open(file_path, 'rb'))
+    file_mimetype = mimetypes.guess_type(file_path)
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type=file_mimetype[0])
+            response['Content-Disposition'] = 'attachment; filename=%s' % smart_str(file_name)
+            return response
+    else:
+        return HttpResponseNotFound()
