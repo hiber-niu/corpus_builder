@@ -3,12 +3,46 @@
 {% load bootstrap3 %}
 
 
-{% block bootstrap3_content %}
-    <div class="container">
-    <h1>语料管理系统</h1>
 
-    {% autoescape off %}{% bootstrap_messages %}{% endautoescape %}
-    {% block content %}(no content){% endblock %}
+{% block bootstrap3_content %}
+
+    {% block header %}
+        <nav class="navbar navbar-default" role="navigation">
+            <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/nre">语料管理系统</a>
+            </div>
+            <div>
+                {% comment %}
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">iOS</a></li>
+                    <li><a href="#">SVN</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            Java
+                            <b class="caret"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">jmeter</a></li>
+                            <li><a href="#">EJB</a></li>
+                            <li><a href="#">Jasper Report</a></li>
+                            <li class="divider"></li>
+                            <li><a href="#">分离的链接</a></li>
+                            <li class="divider"></li>
+                            <li><a href="#">另一个分离的链接</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                {% endcomment %}
+            </div>
+            </div>
+        </nav>
+    {% endblock %}
+
+
+    <div class="container">
+        {% autoescape off %}{% bootstrap_messages %}{% endautoescape %}
+        {% block content %}(no content){% endblock %}
     </div>
 
 {% endblock %}

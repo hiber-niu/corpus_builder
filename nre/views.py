@@ -16,7 +16,6 @@ import os
 
 from django.utils.encoding import smart_str
 
-
 from .models import *
 from .tables import *
 from .forms import *
@@ -137,7 +136,6 @@ class RelTypeEditView(LoginRequiredMixin, TemplateView):
         context = super(HomePageView, self).get_context_data(**kwargs)
         messages.info(self.request, 'hello http://example.com')
         return context
-
 
 
 def download_file(request, file_name):
